@@ -1,7 +1,10 @@
 # VISmode
 
 **iPhone photos, any format. Private, quick and free.**
-Live at **vismode.vercel.app** · by [@boomtumbali](https://www.linkedin.com/in/boomtumbali/) · sister app of [PDFmode](https://pdfmode.vercel.app)
+
+**Use it now at [vismode.vercel.app](https://vismode.vercel.app)**: nothing to install, no sign-up. Works on phones, tablets and computers in Safari, Chrome, Edge and Firefox.
+
+By [@boomtumbali](https://www.linkedin.com/in/boomtumbali/) · sister app of [PDFmode](https://pdfmode.vercel.app) for PDFs
 
 VISmode turns iPhone HEIC photos into JPG, PNG or WebP and gives you the photo tools people use every day. Everything runs in your browser: your photos are never uploaded.
 
@@ -37,10 +40,14 @@ Until a video is added, the start page plays a short film made in code (no downl
 - Large batches are processed one photo at a time: slower, but they don't run out of memory.
 - Video (Live Photo motion, MOV, MP4) is planned for a later version.
 
-## Host it
+## Files
 
-1. Create a GitHub repository (e.g. `VISmode`) and upload `index.html` and this `README.md` (Add file → Upload files → Commit changes).
-2. In Vercel: **Add New → Project**, import the repository, name the project `vismode`, Framework Preset **Other**, no build command, then **Deploy**.
+- `index.html`: the whole app.
+- `og-image.png`: the picture shown when the link is shared on Messenger, Facebook, X and other apps.
+
+## Updating the live site
+
+vismode.vercel.app is built from this repository. To publish an update, upload the new `index.html` (and this `README.md`) here with Add file → Upload files → Commit changes; Vercel deploys it automatically within a minute. After changing `og-image.png`, Messenger and Facebook may keep showing the old picture until you press **Scrape Again** at developers.facebook.com/tools/debug.
 
 ## Built with
 
