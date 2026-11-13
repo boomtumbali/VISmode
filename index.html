@@ -746,7 +746,7 @@ function updateHeader() {
   $('ttl').style.visibility = home ? 'hidden' : 'visible';
   $('tName').textContent = tl ? 'Photo tools' : ws ? T(S.tool).name : '';
   const reading = S.photos.filter(p => p.state === 'reading' || p.state === 'wait').length;
-  $('tMeta').textContent = tl ? plural(TOOLS.length, 'tool') : ws && has ? (reading ? 'Reading ' + (S.photos.length - reading) + ' of ' + S.photos.length + '…' : plural(S.photos.length, 'photo') + ' · ' + fmtB(totalSize())) : '';
+  $('tMeta').textContent = tl ? plural(TOOLS.length, 'tool') : ws && has ? (reading ? 'Reading ' + (S.photos.length - reading) + ' of ' + S.photos.length + '…' : plural(S.photos.length, 'photo')) : '';
   $('hChoose').hidden = !home;
   $('hTools').classList.toggle('on', tl); $('hTools').setAttribute('aria-pressed', String(tl));
   const work = ws && has;
