@@ -369,7 +369,11 @@ a.mode-app:hover { background: var(--fill-strong); }
   .bbar .pb { height: 48px; border-radius: 12px; font-size: 14px; padding: 0 8px; gap: 6px; }
   .dlg { left: 0; right: 0; top: auto; bottom: 0; width: 100% !important; max-height: 88vh; border-radius: 20px 20px 0 0; transform: translateY(24px); padding: 26px 18px calc(18px + env(safe-area-inset-bottom, 0px)); }
   .dlg.on { transform: none; }
-  .dlg::before { content: ""; position: absolute; top: 8px; left: 50%; width: 40px; height: 5px; margin-left: -20px; border-radius: 3px; background: var(--fill-strong); }
+  /* The handle lives inside the sticky header, so grabbing it drags the sheet */
+  .dlg-h { position: sticky; top: -26px; z-index: 3; margin: -26px -18px 0; padding: 26px 18px 0; background: var(--panel); touch-action: none; cursor: grab; }
+  .dlg-h::before { content: ""; position: absolute; top: 8px; left: 50%; width: 40px; height: 5px; margin-left: -20px; border-radius: 3px; background: var(--fill-strong); transition: width .15s, background-color .15s; }
+  .dlg.dragging { transition: none !important; }
+  .dlg.dragging .dlg-h::before { width: 48px; background: var(--text3); }
   .dlg-f { flex-direction: column-reverse; align-items: stretch; } .dlg-f .pb { height: 46px; }
   .mode-apps { grid-template-columns: 1fr; }
   .qrwrap { grid-template-columns: 1fr; justify-items: center; } .qrcard { width: min(100%, 250px); }
@@ -1118,6 +1122,27 @@ $('hGo').addEventListener('click', go); $('bGo').addEventListener('click', go);
 let lastOuts = null;
 function openDlg(id) { const d = $(id); $('scrim').classList.add('on'); d.classList.add('on'); setTimeout(() => d.focus({ preventScroll: true }), 50); }
 function closeDlgs() { document.querySelectorAll('.dlg.on').forEach(d => d.classList.remove('on')); if (!side.classList.contains('open')) $('scrim').classList.remove('on'); }
+// Success and Support sheets on phones: drag the handle or header down to put them away, like Settings.
+document.querySelectorAll('.dlg').forEach(d => {
+  const h = d.querySelector('.dlg-h'); if (!h) return;
+  let y0 = null, ly = 0, lt = 0, dy = 0, v = 0, moved = false;
+  h.addEventListener('pointerdown', e => {
+    if (!matchMedia('(max-width: 760px)').matches || e.target.closest('button, a, input') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    y0 = ly = e.clientY; lt = performance.now(); dy = v = 0; moved = false; d.classList.add('dragging');
+    try { h.setPointerCapture(e.pointerId); } catch (x) {}
+  });
+  h.addEventListener('pointermove', e => {
+    if (y0 == null) return; const now = performance.now(); dy = e.clientY - y0; if (Math.abs(dy) > 4) moved = true;
+    v = (e.clientY - ly) / Math.max(1, now - lt); ly = e.clientY; lt = now;
+    if (moved) d.style.transform = 'translateY(' + Math.max(0, dy) + 'px)';
+  });
+  const end = () => {
+    if (y0 == null) return; y0 = null; d.classList.remove('dragging');
+    if (moved && (dy > d.offsetHeight * .22 || v > .55)) { d.style.transform = 'translateY(' + d.offsetHeight + 'px)'; closeDlgs(); setTimeout(() => { d.style.transform = ''; }, 420); }
+    else requestAnimationFrame(() => { d.style.transform = ''; });
+  };
+  h.addEventListener('pointerup', end); h.addEventListener('pointercancel', end);
+});
 document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeDlgs));
 $('scrim').addEventListener('click', () => { closeDlgs(); closeSheet(); });
 window.addEventListener('keydown', e => { if (e.key === 'Escape') { if (document.querySelector('.dlg.on')) closeDlgs(); else if (side.classList.contains('open')) closeSheet(); } });
