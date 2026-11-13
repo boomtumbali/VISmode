@@ -69,7 +69,7 @@ VISmode is a single self-contained `index.html` with no build step.
 **Run locally:** open `index.html` in a browser.
 
 **Host on Vercel:**
-1. Put `index.html`, `og-image.png` and this `README.md` in a GitHub repository.
+1. Put `index.html`, `og-image.png`, `robots.txt`, `sitemap.xml` and this `README.md` in a GitHub repository.
 2. On [vercel.com](https://vercel.com), choose **Add New → Project**, import the repository, leave the **Framework Preset** as **Other**, and click **Deploy**.
 3. Every commit to the repository redeploys the site automatically, usually within a minute.
 4. After changing `og-image.png`, Messenger and Facebook may keep the old picture until you press **Scrape Again** at [developers.facebook.com/tools/debug](https://developers.facebook.com/tools/debug).
@@ -82,6 +82,9 @@ VISmode is a single self-contained `index.html` with no build step.
 | --- | --- |
 | `index.html` | The whole app: interface, photo tools, icons and the GCash QR code (shown only when someone chooses to support) |
 | `og-image.png` | Link-preview image for Messenger, Facebook, X and others |
+| `robots.txt` | Tells search engines they may read the site, and where the sitemap is |
+| `sitemap.xml` | Lists the site's address for search engines |
+| `google27394a562bf08303.html` | Proves to Google Search Console that you own the site. Keep it |
 | `README.md` | This file |
 
 ## Support
