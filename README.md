@@ -5,7 +5,7 @@
 VISmode turns iPhone HEIC photos into JPG, PNG or WebP, puts photos into one PDF, and gives you the photo tools people use every day: compress, resize, crop, frame, retouch, watermark and remove location. It's built for sharing photos from an iPhone to anything: Windows, Android, school portals and websites.
 
 🔗 **Live:** [vismode.vercel.app](https://vismode.vercel.app): nothing to install, no sign-up. Works on phones, tablets and computers in Safari, Chrome, Edge and Firefox.
-👤 **By:** [@boomtumbali](https://www.linkedin.com/in/boomtumbali) · one of the MODE apps, with [PDFmode](https://pdfmode.vercel.app) for PDFs
+👤 **By:** [@boomtumbali](https://www.linkedin.com/in/boomtumbali) · one of the *mode* apps, with [PDFmode](https://pdfmode.vercel.app) for PDFs
 
 ![VISmode](og-image.png)
 
