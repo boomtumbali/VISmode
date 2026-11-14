@@ -369,11 +369,7 @@ a.mode-app:hover { background: var(--fill-strong); }
   .bbar .pb { height: 48px; border-radius: 12px; font-size: 14px; padding: 0 8px; gap: 6px; }
   .dlg { left: 0; right: 0; top: auto; bottom: 0; width: 100% !important; max-height: 88vh; border-radius: 20px 20px 0 0; transform: translateY(24px); padding: 26px 18px calc(18px + env(safe-area-inset-bottom, 0px)); }
   .dlg.on { transform: none; }
-  /* The handle lives inside the sticky header, so grabbing it drags the sheet */
-  .dlg-h { position: sticky; top: -26px; z-index: 3; margin: -26px -18px 0; padding: 26px 18px 0; background: var(--panel); touch-action: none; cursor: grab; }
-  .dlg-h::before { content: ""; position: absolute; top: 8px; left: 50%; width: 40px; height: 5px; margin-left: -20px; border-radius: 3px; background: var(--fill-strong); transition: width .15s, background-color .15s; }
-  .dlg.dragging { transition: none !important; }
-  .dlg.dragging .dlg-h::before { width: 48px; background: var(--text3); }
+  .dlg::before { content: ""; position: absolute; top: 8px; left: 50%; width: 40px; height: 5px; margin-left: -20px; border-radius: 3px; background: var(--fill-strong); }
   .dlg-f { flex-direction: column-reverse; align-items: stretch; } .dlg-f .pb { height: 46px; }
   .mode-apps { grid-template-columns: 1fr; }
   .qrwrap { grid-template-columns: 1fr; justify-items: center; } .qrcard { width: min(100%, 250px); }
@@ -441,6 +437,17 @@ a.mode-app:hover { background: var(--fill-strong); }
   .wm-logo { width: 21.75px !important; height: 29px !important; }
   .wm-name, .tb .wm-name, .tl-bar .tl-wm { line-height: 17px !important; }
   .wm-by, .tb .wm-by, .tl-bar .wm-by { line-height: 11px !important; }
+}
+
+/* ---- bottom sheets on phones: one handle everywhere, with the same subtle pressed state in the app colour ---- */
+html { touch-action: manipulation; } /* no double-tap zoom, so a tap right after a swipe always counts */
+.dlg-grab { display: none; }
+@media (max-width: 760px) {
+  .dlg-grab { display: block; position: absolute; top: 0; left: 0; right: 0; height: 30px; z-index: 3; touch-action: none; cursor: grab; }
+  .dlg .dlg-h { touch-action: none; }
+  .dlg.dragging { transition: none !important; }
+  .sheet-head::before, .dlg::before { transition: width 0.22s var(--ease), margin-left 0.22s var(--ease), background-color 0.22s ease; }
+  #side.grabbing .sheet-head::before, #side.drag .sheet-head::before, .dlg.grabbing::before, .dlg.dragging::before { width: 56px; margin-left: -28px; background: color-mix(in srgb, var(--accent) 80%, transparent); }
 }
 </style>
 <script>try { var t = localStorage.getItem('vismode.ui'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
@@ -520,12 +527,14 @@ a.mode-app:hover { background: var(--fill-strong); }
 <div class="scrim" id="scrim"></div>
 
 <div class="dlg" id="done" role="dialog" aria-modal="true" aria-labelledby="doneT" tabindex="-1">
+  <div class="dlg-grab" aria-hidden="true"></div>
   <div class="dlg-h"><span class="ok"><svg class="i"><use href="#ic-check"/></svg></span><div><h2 id="doneT">Your photos are ready</h2><p id="doneF"></p></div><button class="ib" type="button" data-close aria-label="Close"><svg class="i"><use href="#ic-x"/></svg></button></div>
   <div class="next" id="doneNext"></div>
   <div class="dlg-f"><button class="sup-link" type="button" id="doneSup"><svg class="i"><use href="#ic-heart"/></svg>Enjoying VISmode? Support it</button><button class="pb" type="button" data-close>Done</button></div>
 </div>
 
 <div class="dlg" id="sup" role="dialog" aria-modal="true" aria-labelledby="supT" tabindex="-1">
+  <div class="dlg-grab" aria-hidden="true"></div>
   <div class="dlg-h"><span class="ok heart"><svg class="i"><use href="#ic-heart"/></svg></span><div><h2 id="supT">Support @boomtumbali</h2><p id="supS"></p></div><button class="ib" type="button" data-close aria-label="Close"><svg class="i"><use href="#ic-x"/></svg></button></div>
   <div id="sup1">
     <p class="sup-msg">I make free tools that respect your privacy: no ads, no limits, no sign-up, and your files never leave your device. If one saved you time, you can chip in any amount, or simply follow along.</p>
@@ -1122,27 +1131,6 @@ $('hGo').addEventListener('click', go); $('bGo').addEventListener('click', go);
 let lastOuts = null;
 function openDlg(id) { const d = $(id); $('scrim').classList.add('on'); d.classList.add('on'); setTimeout(() => d.focus({ preventScroll: true }), 50); }
 function closeDlgs() { document.querySelectorAll('.dlg.on').forEach(d => d.classList.remove('on')); if (!side.classList.contains('open')) $('scrim').classList.remove('on'); }
-// Success and Support sheets on phones: drag the handle or header down to put them away, like Settings.
-document.querySelectorAll('.dlg').forEach(d => {
-  const h = d.querySelector('.dlg-h'); if (!h) return;
-  let y0 = null, ly = 0, lt = 0, dy = 0, v = 0, moved = false;
-  h.addEventListener('pointerdown', e => {
-    if (!matchMedia('(max-width: 760px)').matches || e.target.closest('button, a, input') || (e.pointerType === 'mouse' && e.button !== 0)) return;
-    y0 = ly = e.clientY; lt = performance.now(); dy = v = 0; moved = false; d.classList.add('dragging');
-    try { h.setPointerCapture(e.pointerId); } catch (x) {}
-  });
-  h.addEventListener('pointermove', e => {
-    if (y0 == null) return; const now = performance.now(); dy = e.clientY - y0; if (Math.abs(dy) > 4) moved = true;
-    v = (e.clientY - ly) / Math.max(1, now - lt); ly = e.clientY; lt = now;
-    if (moved) d.style.transform = 'translateY(' + Math.max(0, dy) + 'px)';
-  });
-  const end = () => {
-    if (y0 == null) return; y0 = null; d.classList.remove('dragging');
-    if (moved && (dy > d.offsetHeight * .22 || v > .55)) { d.style.transform = 'translateY(' + d.offsetHeight + 'px)'; closeDlgs(); setTimeout(() => { d.style.transform = ''; }, 420); }
-    else requestAnimationFrame(() => { d.style.transform = ''; });
-  };
-  h.addEventListener('pointerup', end); h.addEventListener('pointercancel', end);
-});
 document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeDlgs));
 $('scrim').addEventListener('click', () => { closeDlgs(); closeSheet(); });
 window.addEventListener('keydown', e => { if (e.key === 'Escape') { if (document.querySelector('.dlg.on')) closeDlgs(); else if (side.classList.contains('open')) closeSheet(); } });
@@ -1166,6 +1154,28 @@ $('doneNext').addEventListener('click', e => {
 $('doneSup').addEventListener('click', () => { closeDlgs(); setTimeout(openSupport, 220); });
 $('byLink').addEventListener('click', e => { e.preventDefault(); closeDlgs(); closeSheet(); openSupport(); });
 document.querySelectorAll('.wm-logo').forEach(l => l.addEventListener('click', () => $('homeLink').click())); // the icon goes home too
+// phones: pull a sheet down by its handle or title row to close it
+['done', 'sup'].forEach(id => {
+  const dlg = $(id); let y0 = null, dy = 0, t0 = 0;
+  [dlg.querySelector('.dlg-grab'), dlg.querySelector('.dlg-h')].forEach(z => {
+    if (!z) return;
+    z.addEventListener('pointerdown', e => { if (innerWidth > 760 || e.target.closest('button, a')) return; y0 = e.clientY; dy = 0; t0 = performance.now(); dlg.classList.add('dragging'); try { z.setPointerCapture(e.pointerId); } catch (x) {} });
+    z.addEventListener('pointermove', e => { if (y0 == null) return; dy = Math.max(0, e.clientY - y0); dlg.style.transform = 'translateY(' + dy + 'px)'; });
+    const end = () => { if (y0 == null) return; y0 = null; const v = dy / Math.max(1, performance.now() - t0); dlg.classList.remove('dragging'); dlg.style.transform = ''; if (dy > Math.max(80, dlg.offsetHeight * 0.22) || v > 0.55) closeDlgs(); /* a small nudge never closes it */ };
+    z.addEventListener('pointerup', end); z.addEventListener('pointercancel', end);
+  });
+});
+// every bottom-sheet handle answers a touch the same way: it widens and takes on the app colour while held
+(() => {
+  const Z = [['#sheetHead', '#side'], ['.dlg .dlg-grab', '.dlg'], ['.dlg .dlg-h', '.dlg']];
+  let held = null; const off = () => { if (held) { held.classList.remove('grabbing'); held = null; } };
+  document.addEventListener('pointerdown', e => {
+    if (innerWidth > 760 || (e.pointerType === 'mouse' && e.button !== 0) || !e.target.closest) return;
+    if (e.target.closest('button, a, input, textarea, select')) return;
+    for (const [hs, cs] of Z) { const h = e.target.closest(hs); if (h) { off(); held = h.closest(cs); if (held) held.classList.add('grabbing'); return; } }
+  }, true);
+  document.addEventListener('pointerup', off, true); document.addEventListener('pointercancel', off, true); addEventListener('blur', off);
+})();
 function openSupport() { $('sup1').hidden = false; $('sup2').hidden = true; $('supS').textContent = ''; $('sup').style.width = ''; openDlg('sup'); }
 $('supQr').addEventListener('click', () => { $('sup1').hidden = true; $('sup2').hidden = false; $('supS').textContent = 'Scan with GCash or any InstaPay bank app.'; if (innerWidth > 760) $('sup').style.width = 'min(700px, calc(100% - 32px))'; });
 $('supBack').addEventListener('click', () => { $('sup2').hidden = true; $('sup1').hidden = false; $('supS').textContent = ''; $('sup').style.width = ''; });
